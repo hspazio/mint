@@ -21,22 +21,29 @@ var newCmd = &cobra.Command{
 	Short: "Create new note",
 	Long:  "Create a new note",
 	Run: func(cmd *cobra.Command, args []string) {
-		if name != "" {
-			name = fmt.Sprintf("%s.%s", name, "md")
-			edit := exec.Command(os.Getenv("EDITOR"), filepath.Join(workdir, name))
-			edit.Stdin = os.Stdin
-			edit.Stdout = os.Stdout
-			edit.Stderr = os.Stderr
-
-			if err := edit.Start(); err != nil {
-				fmt.Fprintf(os.Stderr, "could not start editor: %v", err)
-				os.Exit(1)
-			}
-
-			if err := edit.Wait(); err != nil {
-				fmt.Fprintf(os.Stderr, "could not wait for editor to finish: %v", err)
-				os.Exit(1)
-			}
+		if name == "" {
+			fmt.Fprintf(os.Stderr, "a name must be provided\n")
+			os.Exit(1)
+		}
+		if err := editNote(name); err != nil {
+			fmt.Fprintf(os.Stderr, "could not start editor: %v\n", err)
+			os.Exit(1)
 		}
 	},
+}
+
+func editNote(name string) error {
+	filename := fmt.Sprintf("%s.%s", name, "md")
+	edit := exec.Command(os.Getenv("EDITOR"), filepath.Join(workdir, filename))
+	edit.Stdin = os.Stdin
+	edit.Stdout = os.Stdout
+	edit.Stderr = os.Stderr
+
+	if err := edit.Start(); err != nil {
+		return err
+	}
+	if err := edit.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
