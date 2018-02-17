@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -18,18 +17,12 @@ var removeCmd = &cobra.Command{
 	Long:  "Remove notes from the workspace if they exist",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			fmt.Fprintf(os.Stderr, "a note must be provided\n")
-			os.Exit(1)
+			exit("a note must be provided", nil)
 		}
 
 		for _, name := range args {
-			filename := fmt.Sprintf("%s.%s", name, "md")
-			file := filepath.Join(workdir, filename)
-
-			err := os.Remove(file)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "could not delete note %s: %v\n", name, err)
-				os.Exit(1)
+			if err := store.RemoveNote(name); err != nil {
+				exit(fmt.Sprintf("could not delete note %s", name), err)
 			}
 			fmt.Fprintf(os.Stdout, "note %s removed\n", name)
 		}

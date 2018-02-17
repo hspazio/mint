@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
-	"path/filepath"
+	"strconv"
 
+	"github.com/hspazio/mint/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -21,51 +22,60 @@ var noteCmd = &cobra.Command{
 	Short: "Create or edit a note",
 	Long:  "Create or edit a note, create a new one if it doesn't exist",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Fprintf(os.Stderr, "a name must be provided\n")
-			os.Exit(1)
-		}
+		var note storage.Note
+		var err error
 
-		name := args[0]
-		filename := fmt.Sprintf("%s.%s", name, "md")
-		file := filepath.Join(workdir, filename)
+		if len(args) < 1 {
+			n, err := noteFromList()
+			if err != nil {
+				exit("error while listing notes", err)
+			}
+			note = *n
+		} else {
+			note = store.NoteFromName(args[0])
+		}
 
 		stdinInfo, err := os.Stdin.Stat()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not read stats for Stdin: %v\n", err)
-			os.Exit(1)
+			exit("could not read stats from Stdin", err)
 		}
 		if stdinInfo.Size() > 0 {
 			content, err := ioutil.ReadAll(os.Stdin)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "could not read from Stdin: %v\n", err)
-				os.Exit(1)
+				exit("could not read from Stdin", err)
 			}
-			err = ioutil.WriteFile(file, content, os.ModePerm)
+			err = store.WriteNote(note, content)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "could not save file: %v\n", err)
-				os.Exit(1)
+				exit("could not save file", err)
 			}
 		} else {
-			if err := edit(file); err != nil {
-				fmt.Fprintf(os.Stderr, "could not start editor: %v\n", err)
-				os.Exit(1)
+			fmt.Println(store.Dir)
+			if err := store.EditNote(note); err != nil {
+				exit("could not start editor", err)
 			}
 		}
 	},
 }
 
-func edit(file string) error {
-	edit := exec.Command(os.Getenv("EDITOR"), file)
-	edit.Stdin = os.Stdin
-	edit.Stdout = os.Stdout
-	edit.Stderr = os.Stderr
+func noteFromList() (*storage.Note, error) {
+	notes, err := store.Notes()
+	if err != nil {
+		return nil, err
+	}
+	printList(notes)
 
-	if err := edit.Start(); err != nil {
-		return err
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("Which note to edit?: ")
+	scanner.Scan()
+	if scanner.Err() != nil {
+		return nil, fmt.Errorf("could not read from Stdin: %v", scanner.Err())
 	}
-	if err := edit.Wait(); err != nil {
-		return err
+	index, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		return nil, fmt.Errorf("answer is not a number")
 	}
-	return nil
+	if index > (len(notes)-1) || index < 0 {
+		return nil, fmt.Errorf("number is not in the list")
+	}
+	return &notes[index], nil
 }

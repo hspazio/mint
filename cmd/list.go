@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
 
+	"github.com/hspazio/mint/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -18,14 +16,16 @@ var listCmd = &cobra.Command{
 	Short: "List all notes",
 	Long:  "List all notes available in the workspace",
 	Run: func(cmd *cobra.Command, args []string) {
-		files, err := ioutil.ReadDir(workdir)
+		notes, err := store.Notes()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "could not list directory: %v\n", err)
-			os.Exit(1)
+			exit("could not list notes", err)
 		}
-		for i, f := range files {
-			name := strings.TrimSuffix(f.Name(), ".md")
-			fmt.Printf("%d. %s\n", i+1, name)
-		}
+		printList(notes)
 	},
+}
+
+func printList(notes []storage.Note) {
+	for i, n := range notes {
+		fmt.Printf("%d. %s\n", i, n.Name)
+	}
 }
