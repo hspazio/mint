@@ -12,15 +12,15 @@ import (
 var name string
 
 func init() {
-	rootCmd.AddCommand(newCmd)
-	newCmd.Flags().StringVarP(&name, "name", "n", "", "Name of the note")
+	rootCmd.AddCommand(openCmd)
 }
 
-var newCmd = &cobra.Command{
-	Use:   "new",
-	Short: "Create new note",
-	Long:  "Create a new note",
+var openCmd = &cobra.Command{
+	Use:   "open",
+	Short: "Open a note for edit",
+	Long:  "Open a note for edit, create a new one if it doesn't exist",
 	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
 		if name == "" {
 			fmt.Fprintf(os.Stderr, "a name must be provided\n")
 			os.Exit(1)
