@@ -9,12 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var workdir string
-
-func init() {
-	// TODO: remove or use config file
-	rootCmd.PersistentFlags().StringVarP(&workdir, "workdir", "d", initWorkdir(), "Working directory")
-}
+var workdir = initWorkdir()
 
 var rootCmd = &cobra.Command{
 	Use:   "mint",
@@ -40,7 +35,7 @@ func initWorkdir() string {
 
 	dir := filepath.Join(rootdir, ".mint")
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		fmt.Fprintf(os.Stderr, "could not create directory %s: %v", dir, err)
+		fmt.Fprintf(os.Stderr, "could not create directory %s: %v\n", dir, err)
 		os.Exit(1)
 	}
 	return dir
