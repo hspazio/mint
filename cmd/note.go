@@ -24,6 +24,10 @@ var noteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var note storage.Note
 		var err error
+		store, err = storage.NewStore()
+		if err != nil {
+			exit("could not initialize store", err)
+		}
 
 		if len(args) < 1 {
 			n, err := noteFromList()
@@ -49,7 +53,7 @@ var noteCmd = &cobra.Command{
 				exit("could not save file", err)
 			}
 		} else {
-			fmt.Println(store.Dir)
+			fmt.Println(store.Config.Dir)
 			if err := store.EditNote(note); err != nil {
 				exit("could not start editor", err)
 			}

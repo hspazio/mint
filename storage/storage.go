@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 	"strings"
+
+	"github.com/hspazio/mint/configurations"
 )
 
 // Note is initialized using Name and Path of the file
@@ -18,26 +19,22 @@ type Note struct {
 
 // Store contains the applications's data
 type Store struct {
-	Dir    string
-	Editor string
+	Config configurations.Configurations
 }
 
 // NewStore creates a Store
-func NewStore(editor string) (*Store, error) {
-	store := &Store{
-		Dir:    filepath.Join(rootdir(), ".mint"),
-		Editor: editor,
-	}
-	if err := store.setup(); err != nil {
+func NewStore() (*Store, error) {
+	conf, err := configurations.GetAll()
+	if err != nil {
 		return nil, err
 	}
-	return store, nil
+	return &Store{Config: *conf}, nil
 }
 
 // Notes lists all available notes in the store
 func (s Store) Notes() ([]Note, error) {
 	var notes []Note
-	files, err := ioutil.ReadDir(s.Dir)
+	files, err := ioutil.ReadDir(s.Config.Dir)
 	if err != nil {
 		return notes, err
 	}
@@ -50,8 +47,8 @@ func (s Store) Notes() ([]Note, error) {
 
 // EditNote will open a Note with the default $EDITOR
 func (s Store) EditNote(note Note) error {
-	file := filepath.Join(s.Dir, note.Path)
-	edit := exec.Command(s.Editor, file)
+	file := filepath.Join(s.Config.Dir, note.Path)
+	edit := exec.Command(s.Config.Editor, file)
 	edit.Stdin = os.Stdin
 	edit.Stdout = os.Stdout
 	edit.Stderr = os.Stderr
@@ -68,7 +65,7 @@ func (s Store) EditNote(note Note) error {
 // RemoveNote will take in input a name and will remove the Note with the given name
 func (s Store) RemoveNote(name string) error {
 	note := s.NoteFromName(name)
-	file := filepath.Join(s.Dir, note.Path)
+	file := filepath.Join(s.Config.Dir, note.Path)
 
 	err := os.Remove(file)
 	if err != nil {
@@ -79,7 +76,7 @@ func (s Store) RemoveNote(name string) error {
 
 // WriteNote will save the content to a Note
 func (s Store) WriteNote(note Note, b []byte) error {
-	file := filepath.Join(s.Dir, note.Path)
+	file := filepath.Join(s.Config.Dir, note.Path)
 	return ioutil.WriteFile(file, b, os.ModePerm)
 }
 
@@ -92,16 +89,4 @@ func (s Store) NoteFromName(name string) Note {
 func (s Store) noteFromFile(f os.FileInfo) Note {
 	name := strings.TrimSuffix(f.Name(), ".md")
 	return Note{Name: name, Path: f.Name()}
-}
-
-func (s Store) setup() error {
-	return os.MkdirAll(s.Dir, os.ModePerm)
-}
-
-func rootdir() string {
-	usr, err := user.Current()
-	if err == nil {
-		return usr.HomeDir
-	}
-	return "."
 }

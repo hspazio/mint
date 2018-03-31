@@ -16,6 +16,10 @@ var listCmd = &cobra.Command{
 	Short: "List all notes",
 	Long:  "List all notes available in the workspace",
 	Run: func(cmd *cobra.Command, args []string) {
+		store, err := storage.NewStore()
+		if err != nil {
+			exit("could not initialize store", err)
+		}
 		notes, err := store.Notes()
 		if err != nil {
 			exit("could not list notes", err)

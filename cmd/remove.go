@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hspazio/mint/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +17,10 @@ var removeCmd = &cobra.Command{
 	Short: "Remove one or more notes",
 	Long:  "Remove notes from the workspace if they exist",
 	Run: func(cmd *cobra.Command, args []string) {
+		store, err := storage.NewStore()
+		if err != nil {
+			exit("could not initialize store", err)
+		}
 		if len(args) < 1 {
 			exit("a note must be provided", nil)
 		}
