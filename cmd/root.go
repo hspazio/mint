@@ -14,8 +14,6 @@ var rootCmd = &cobra.Command{
 	Use:   "mint",
 	Short: "Easily manage ideas",
 	Long:  "Mint is a simple comman line tool to manage notes",
-	Run: func(cmd *cobra.Command, args []string) {
-	},
 }
 
 // Execute root command
