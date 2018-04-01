@@ -1,13 +1,11 @@
-# mint
-
-Mint is a simple note manager written in Go
+# Mint - A simple note manager written in Go
 
 ## Usage
 
 After installation:
 
 ```bash
-# creates a configuration file ~/.mint.json and a default 
+# create a configuration file ~/.mint.json and a default 
 # location where to keep the notes: ~/.mint/
 mint init
 
