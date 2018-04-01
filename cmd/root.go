@@ -18,6 +18,11 @@ var rootCmd = &cobra.Command{
 
 // Execute root command
 func Execute() {
+	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(noteCmd)
+	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(removeCmd)
 	rootCmd.Execute()
 }
 

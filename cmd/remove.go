@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(removeCmd)
-}
-
 var removeCmd = &cobra.Command{
 	Use:   "rm",
 	Short: "Remove one or more notes",

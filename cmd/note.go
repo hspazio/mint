@@ -13,10 +13,6 @@ import (
 
 var name string
 
-func init() {
-	rootCmd.AddCommand(noteCmd)
-}
-
 var noteCmd = &cobra.Command{
 	Use:   "note",
 	Short: "Create or edit a note",
